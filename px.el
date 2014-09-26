@@ -1,10 +1,31 @@
-;;; px.el --- preview inline latex -*- lexical-binding: t -*-
+;;; px.el --- preview inline latex in any mode
+;; -*- lexical-binding: t -*-
+
+;; Copyright (C) 2014 Aurélien Aptel <aurelien.aptel@gmail.com>
+;; Copyright (C) 2013 Rüdiger Sonderfeld <ruediger@c-plusplus.de>
+
+;; Author: Aurélien Aptel <aurelien.aptel@gmail.com>
+;; URL: http://github.com/aaptel/preview-latex
+;; Version: 1.0
+
+
+;;; Commentary:
+
+;; Provides functions to preview LaTeX codes like $x^2$ in any
+;; buffer/mode.
+
+;; Use `px-preview-region' to preview LaTeX codes delimited by $ pairs
+;; in the region.
+;; Use `px-preview' to process the whole buffer.
+;; Use `px-remove' to remove all images and restore the text back.
+;; Use `px-toggle' to toggle between images and text on the whole
+;; buffer.
 
 ;; Most of this code comes from weechat-latex.el which in turn uses
 ;; org-mode previewer.
 
-;; Copyright (C) 2014 Aurélien Aptel <aurelien.aptel@gmail.com>
-;; Copyright (C) 2013 Rüdiger Sonderfeld <ruediger@c-plusplus.de>
+
+;;; License:
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -18,6 +39,8 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Code:
 
 (require 'org)
 
@@ -53,8 +76,9 @@ POINT to replace.  If AT is nil replace statements everywhere."
           (make-temp-file px-temp-directory-prefix
                           'directory))))
 
+;;;###autoload
 (defun px-preview ()
-  "Preview LaTeX fragments."
+  "Preview LaTeX fragments in the current buffer."
   (interactive)
   (save-excursion
     (let ((inhibit-read-only t))
@@ -62,6 +86,7 @@ POINT to replace.  If AT is nil replace statements everywhere."
       (org-remove-latex-fragment-image-overlays)
       (px--create-preview nil))))
 
+;;;###autoload
 (defun px-preview-region (beg end)
   "Preview LaTeX fragments in region."
   (interactive "r")
@@ -78,9 +103,9 @@ POINT to replace.  If AT is nil replace statements everywhere."
         (dolist (i matches)
           (px--create-preview i))))))
 
-
+;;;###autoload
 (defun px-remove ()
-  "Remove LaTeX preview images."
+  "Remove LaTeX preview images in current buffer."
   (interactive)
   (let ((inhibit-read-only t))
     (org-remove-latex-fragment-image-overlays)))
@@ -89,8 +114,9 @@ POINT to replace.  If AT is nil replace statements everywhere."
   "Are LaTeX Previews currently displayed?"
   org-latex-fragment-image-overlays)
 
+;;;###autoload
 (defun px-toggle ()
-  "Toggle display of LaTeX preview."
+  "Toggle display of LaTeX preview in the current buffer."
   (interactive)
   (if (px-is-active?)
       (px-remove)
@@ -98,3 +124,5 @@ POINT to replace.  If AT is nil replace statements everywhere."
 
 
 (provide 'px)
+
+;;; px.el ends here
