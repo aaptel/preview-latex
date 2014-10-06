@@ -1,5 +1,4 @@
 ;;; px.el --- preview inline latex in any mode
-;; -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2014 Aurélien Aptel <aurelien.aptel@gmail.com>
 ;; Copyright (C) 2013 Rüdiger Sonderfeld <ruediger@c-plusplus.de>
