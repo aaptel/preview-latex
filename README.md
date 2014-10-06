@@ -8,7 +8,7 @@ org-mode previewer.
 Installation
 ============
 
-Place px.el somewhere on your load-path.
+Place px.el somewhere on your load-path and load it.
 
 Usage
 =====
