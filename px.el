@@ -65,7 +65,7 @@ POINT to replace.  If AT is nil replace statements everywhere."
                     px-temp-dir
                     'overlays
                     "Creating images...%s"
-                    at 'forbuffer
+                    'forbuffer
                     px-image-program))
 
 (defun px--set-temp-dir ()
