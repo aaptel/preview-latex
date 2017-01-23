@@ -61,12 +61,23 @@ See `org-latex-create-formula-image-program'")
 The parameter AT should be nil or in (TYPE . POINT) format.  With TYPE being a
 string showing the matched LaTeX statement (e.g., ``$'') and POINT being the
 POINT to replace.  If AT is nil replace statements everywhere."
-  (org-format-latex px-temp-file-prefix
-                    px-temp-dir
-                    'overlays
-                    "Creating images...%s"
-                    at 'forbuffer
-                    px-image-program))
+  (condition-case e
+      (org-format-latex px-temp-file-prefix
+                        px-temp-dir
+                        'overlays
+                        "Creating images...%s"
+                        at 'forbuffer
+                        px-image-program)
+
+    ;; if wrong arity, try with one less argument (cf. issue #1)
+    (wrong-number-of-arguments
+     (org-format-latex px-temp-file-prefix
+                       px-temp-dir
+                       'overlays
+                       "Creating images...%s"
+                       'forbuffer
+                       px-image-program))))
+
 
 (defun px--set-temp-dir ()
   "Set `px-temp-dir' unless it is already set."
