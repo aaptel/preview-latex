@@ -5,7 +5,7 @@
 
 ;; Author: Aurélien Aptel <aurelien.aptel@gmail.com>
 ;; URL: http://github.com/aaptel/preview-latex
-;; Version: 1.0
+;; Version: 1.1
 
 
 ;;; Commentary:
@@ -56,27 +56,39 @@ See `org-latex-create-formula-image-program'")
 (defvar px-temp-dir nil
   "The temporary directory used for preview images.")
 
-(defun px--create-preview (at)
+(defvar px--active nil)
+(make-variable-buffer-local 'px--active)
+
+(defun px--create-preview (&optional beg end)
   "Wrapper for `org-format-latex'.
 The parameter AT should be nil or in (TYPE . POINT) format.  With TYPE being a
 string showing the matched LaTeX statement (e.g., ``$'') and POINT being the
 POINT to replace.  If AT is nil replace statements everywhere."
-  (condition-case e
+  (if (version< "9" org-version)
       (org-format-latex px-temp-file-prefix
-                        px-temp-dir
+                        beg end
+                        temporary-file-directory
                         'overlays
                         "Creating images...%s"
-                        at 'forbuffer
+                        'forbuffer
                         px-image-program)
+    (condition-case e
+        (org-format-latex px-temp-file-prefix
+                          px-temp-dir
+                          'overlays
+                          "Creating images...%s"
+                          (if beg (cons "$" beg) nil)
+                          'forbuffer
+                          px-image-program)
 
-    ;; if wrong arity, try with one less argument (cf. issue #1)
-    (wrong-number-of-arguments
-     (org-format-latex px-temp-file-prefix
-                       px-temp-dir
-                       'overlays
-                       "Creating images...%s"
-                       'forbuffer
-                       px-image-program))))
+      ;; if wrong arity, try with one less argument (cf. issue #1)
+      (wrong-number-of-arguments
+       (org-format-latex px-temp-file-prefix
+                         px-temp-dir
+                         'overlays
+                         "Creating images...%s"
+                         'forbuffer
+                         px-image-program)))))
 
 
 (defun px--set-temp-dir ()
@@ -93,8 +105,9 @@ POINT to replace.  If AT is nil replace statements everywhere."
   (save-excursion
     (let ((inhibit-read-only t))
       (px--set-temp-dir)
-      (org-remove-latex-fragment-image-overlays)
-      (px--create-preview nil))))
+      (px-remove)
+      (px--create-preview)
+      (setq px--active t))))
 
 ;;;###autoload
 (defun px-preview-region (beg end)
@@ -107,7 +120,7 @@ POINT to replace.  If AT is nil replace statements everywhere."
     (save-excursion
       (goto-char beg)
       (while (re-search-forward regex end t)
-        (setq matches (cons (cons "$" (match-beginning n)) matches)))
+        (setq matches (cons (cons (match-beginning n) (match-end n)) matches)))
       (let ((inhibit-read-only t))
         (px--set-temp-dir)
         (dolist (i matches)
@@ -118,17 +131,16 @@ POINT to replace.  If AT is nil replace statements everywhere."
   "Remove LaTeX preview images in current buffer."
   (interactive)
   (let ((inhibit-read-only t))
-    (org-remove-latex-fragment-image-overlays)))
-
-(defun px-is-active? ()
-  "Are LaTeX Previews currently displayed?"
-  org-latex-fragment-image-overlays)
+    (if (version< "9" org-version)
+        (delete-all-overlays)
+      (org-remove-latex-fragment-image-overlays)))
+  (setq px--active nil))
 
 ;;;###autoload
 (defun px-toggle ()
   "Toggle display of LaTeX preview in the current buffer."
   (interactive)
-  (if (px-is-active?)
+  (if px--active
       (px-remove)
     (px-preview)))
 
